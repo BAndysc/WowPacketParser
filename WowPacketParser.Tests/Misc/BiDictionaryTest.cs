@@ -29,7 +29,7 @@ namespace WowPacketParser.Tests.Misc
         [Test]
         public void TestCount()
         {
-            Assert.That(3, Is.EqualTo(_biDictionary.Count));
+            Assert.AreEqual(3, _biDictionary.Count);
         }
 
         [Test]
@@ -37,27 +37,27 @@ namespace WowPacketParser.Tests.Misc
         {
             _biDictionary.Clear();
 
-            Assert.That(0, Is.EqualTo(_biDictionary.Count));
+            Assert.AreEqual(0, _biDictionary.Count);
         }
 
         [Test]
         public void TestIndexers()
         {
-            Assert.That(5.0, Is.EqualTo(_biDictionary[10]));
-            Assert.That(int.MaxValue,Is.EqualTo( _biDictionary[double.MinValue]));
+            Assert.AreEqual(5.0, _biDictionary[10]);
+            Assert.AreEqual(int.MaxValue, _biDictionary[double.MinValue]);
 
-            Assert.That(default(int), Is.EqualTo(_biDictionary[1.0]));
-            Assert.That(default(double), Is.EqualTo(_biDictionary[1]));
+            Assert.AreEqual(default(int), _biDictionary[1.0]);
+            Assert.AreEqual(default(double), _biDictionary[1]);
         }
 
         [Test]
         public void TestGetters()
         {
-            Assert.That(5.0, Is.EqualTo(_biDictionary.GetByFirst(10)));
-            Assert.That(int.MaxValue, Is.EqualTo(_biDictionary.GetBySecond(double.MinValue)));
+            Assert.AreEqual(5.0, _biDictionary.GetByFirst(10));
+            Assert.AreEqual(int.MaxValue, _biDictionary.GetBySecond(double.MinValue));
 
-            Assert.That(default(double), Is.EqualTo(_biDictionary.GetByFirst(1)));
-            Assert.That(default(int), Is.EqualTo(_biDictionary.GetBySecond(1.0)));
+            Assert.AreEqual(default(double), _biDictionary.GetByFirst(1));
+            Assert.AreEqual(default(int), _biDictionary.GetBySecond(1.0));
         }
 
         [Test]
@@ -66,42 +66,42 @@ namespace WowPacketParser.Tests.Misc
             int first;
             double second;
 
-            Assert.That(_biDictionary.TryGetByFirst(10, out second), Is.True);
-            Assert.That(_biDictionary.TryGetBySecond(double.MinValue, out first), Is.True);
+            Assert.IsTrue(_biDictionary.TryGetByFirst(10, out second));
+            Assert.IsTrue(_biDictionary.TryGetBySecond(double.MinValue, out first));
 
-            Assert.That(5.0, Is.EqualTo(second));
-            Assert.That(int.MaxValue, Is.EqualTo(first));
+            Assert.AreEqual(5.0, second);
+            Assert.AreEqual(int.MaxValue, first);
 
-            Assert.That(_biDictionary.TryGetByFirst(1, out second), Is.False);
-            Assert.That(_biDictionary.TryGetBySecond(1.0, out first), Is.False);
+            Assert.IsFalse(_biDictionary.TryGetByFirst(1, out second));
+            Assert.IsFalse(_biDictionary.TryGetBySecond(1.0, out first));
 
-            Assert.That(_biDictionary.TryGetValue(10, out second), Is.True);
-            Assert.That(_biDictionary.TryGetValue(double.MinValue, out first), Is.True);
+            Assert.IsTrue(_biDictionary.TryGetValue(10, out second));
+            Assert.IsTrue(_biDictionary.TryGetValue(double.MinValue, out first));
 
-            Assert.That(5.0, Is.EqualTo(second));
-            Assert.That(int.MaxValue,Is.EqualTo(first));
+            Assert.AreEqual(5.0, second);
+            Assert.AreEqual(int.MaxValue, first);
 
-            Assert.That(_biDictionary.TryGetValue(1, out second), Is.False);
-            Assert.That(_biDictionary.TryGetValue(1.0, out first), Is.False);
+            Assert.IsFalse(_biDictionary.TryGetValue(1, out second));
+            Assert.IsFalse(_biDictionary.TryGetValue(1.0, out first));
         }
 
         [Test]
         public void TestSetters()
         {
             _biDictionary[10] = 6.0;
-            Assert.That(6.0, Is.EqualTo(_biDictionary.GetByFirst(10)));
+            Assert.AreEqual(6.0, _biDictionary.GetByFirst(10));
 
             _biDictionary[7.0] = 10;
-            Assert.That(10, Is.EqualTo(_biDictionary.GetBySecond(7.0)));
+            Assert.AreEqual(10, _biDictionary.GetBySecond(7.0));
         }
 
         [Test]
         public void TestEnumerator()
         {
-            Assert.That(_biDictionary.GetEnumerator(), Is.Not.Null);
+            Assert.IsNotNull(_biDictionary.GetEnumerator());
 
             foreach (KeyValuePair<int, double> keyValuePair in _biDictionary)
-                Assert.That(keyValuePair, Is.Not.Null);
+                Assert.IsNotNull(keyValuePair);
         }
 
         [Test]
@@ -112,8 +112,8 @@ namespace WowPacketParser.Tests.Misc
             _biDictionary.Add(new KeyValuePair<int, double>(1, 2.0));
             _biDictionary.Add(new KeyValuePair<double, int>(3.0, 4));
 
-            Assert.That(6, Is.EqualTo(_biDictionary.Count));
-            Assert.That(default(double), Is.EqualTo(_biDictionary[default(int)]));
+            Assert.AreEqual(6, _biDictionary.Count);
+            Assert.AreEqual(default(double), _biDictionary[default(int)]);
         }
 
         [Test]
@@ -124,31 +124,31 @@ namespace WowPacketParser.Tests.Misc
             _biDictionary.Add(4, 6.0);
             _biDictionary.Add(7, 8.0);
 
-            Assert.That(_biDictionary.Remove(1), Is.True);
-            Assert.That(_biDictionary.Remove(4.0), Is.True);
+            Assert.IsTrue(_biDictionary.Remove(1));
+            Assert.IsTrue(_biDictionary.Remove(4.0));
 
-            Assert.That(5, Is.EqualTo(_biDictionary.Count));
+            Assert.AreEqual(5, _biDictionary.Count);
 
-            Assert.That(_biDictionary.Remove(1), Is.False);
-            Assert.That(_biDictionary.Remove(4.0), Is.False);
+            Assert.IsFalse(_biDictionary.Remove(1));
+            Assert.IsFalse(_biDictionary.Remove(4.0));
 
-            Assert.That(_biDictionary.Remove(new KeyValuePair<int, double>(4, 6.0)), Is.True);
-            Assert.That(_biDictionary.Remove(new KeyValuePair<double, int>(8.0, 7)), Is.True);
+            Assert.IsTrue(_biDictionary.Remove(new KeyValuePair<int, double>(4, 6.0)));
+            Assert.IsTrue(_biDictionary.Remove(new KeyValuePair<double, int>(8.0, 7)));
 
-            Assert.That(3, Is.EqualTo(_biDictionary.Count));
+            Assert.AreEqual(3, _biDictionary.Count);
         }
 
         [Test]
         public void TestContains()
         {
-            Assert.That(_biDictionary.Contains(new KeyValuePair<int, double>(10, 5.0)), Is.True);
-            Assert.That(_biDictionary.Contains(new KeyValuePair<double, int>(5.0, 10)), Is.True);
+            Assert.IsTrue(_biDictionary.Contains(new KeyValuePair<int, double>(10, 5.0)));
+            Assert.IsTrue(_biDictionary.Contains(new KeyValuePair<double, int>(5.0, 10)));
 
-            Assert.That(_biDictionary.ContainsKey(10), Is.True);
-            Assert.That(_biDictionary.ContainsValue(5.0), Is.True);
+            Assert.IsTrue(_biDictionary.ContainsKey(10));
+            Assert.IsTrue(_biDictionary.ContainsValue(5.0));
 
-            Assert.That(_biDictionary.ContainsKey(5.0), Is.True);
-            Assert.That(_biDictionary.ContainsValue(10), Is.True);
+            Assert.IsTrue(_biDictionary.ContainsKey(5.0));
+            Assert.IsTrue(_biDictionary.ContainsValue(10));
         }
     }
 }

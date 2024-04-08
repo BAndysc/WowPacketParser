@@ -58,7 +58,7 @@ namespace WowPacketParser.Tests
                 }
             }
 
-            Assert.That(allUsed, Is.True, "Found unused opcodes defined.");
+            Assert.IsTrue(allUsed, "Found unused opcodes defined.");
         }
 
         [Test, Ignore("Ignore TestHasValue")]
@@ -94,7 +94,7 @@ namespace WowPacketParser.Tests
                 }
             }
 
-            Assert.That(allUsed, Is.True, "Found unused opcodes defined.");
+            Assert.IsTrue(allUsed, "Found unused opcodes defined.");
         }
 
 
@@ -134,7 +134,7 @@ namespace WowPacketParser.Tests
                 }
             }
 
-            Assert.That(!anyUnhandled, Is.True, "Found unhandled opcodes defined.");
+            Assert.IsTrue(!anyUnhandled, "Found unhandled opcodes defined.");
         }
     }
 }

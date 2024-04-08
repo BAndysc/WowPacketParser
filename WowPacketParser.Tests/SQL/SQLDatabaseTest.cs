@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using WowPacketParser.SQL;
 
 #pragma warning disable 414
@@ -42,7 +41,7 @@ namespace WowPacketParser.Tests.SQL
                 new TestDataModel {ID = 2, TestInt1 = 21, TestString1 = "b"}
             };
             var data = SQLDatabase.Get(cond, "wpp_test");
-            Assert.That(data, Is.Not.Null);
+            Assert.NotNull(data);
         }
     }
 }
