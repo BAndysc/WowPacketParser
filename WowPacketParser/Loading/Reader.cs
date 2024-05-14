@@ -12,14 +12,17 @@ namespace WowPacketParser.Loading
         public string FileName { get; }
         public IPacketReader PacketReader { get; }
 
-        public Reader(string fileName, SniffType type)
+        public Reader(int basePacketNumber, string fileName, SniffType type)
         {
+            _packetNum = basePacketNumber;
             FileName = fileName;
             PacketReader = GetPacketReader(fileName, type);
         }
 
         private static IPacketReader GetPacketReader(string fileName, SniffType type)
         {
+            if (Settings.UseStandardInput)
+                return new StandardInputBinaryPacketReader(Encoding.ASCII);
             switch (type)
             {
                 case SniffType.Sqlite:

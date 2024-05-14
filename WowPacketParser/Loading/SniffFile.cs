@@ -29,6 +29,7 @@ namespace WowPacketParser.Loading
         private SniffType _sniffType;
 
         private readonly Statistics _stats;
+        private readonly int _basePacketNumber;
         private readonly DumpFormatType _dumpFormat;
         private readonly string _logPrefix;
 
@@ -36,14 +37,17 @@ namespace WowPacketParser.Loading
         private readonly List<string> _skippedHeaders = new List<string>();
         private readonly List<string> _noStructureHeaders = new List<string>();
 
-        public SniffFile(string fileName, DumpFormatType dumpFormat = DumpFormatType.Text, Tuple<int, int> number = null)
+        public SniffFile(int basePacketNumber, string fileName, DumpFormatType dumpFormat = DumpFormatType.Text, Tuple<int, int> number = null)
         {
-            if (string.IsNullOrWhiteSpace(fileName))
-                throw new ArgumentException("fileName cannot be null, empty or whitespace.", nameof(fileName));
-
             _stats = new Statistics();
 
-            FileName = fileName;
+            if (!Settings.UseStandardInput)
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                    throw new ArgumentException("fileName cannot be null, empty or whitespace.", nameof(fileName));
+                FileName = fileName;
+            }
+            _basePacketNumber = basePacketNumber;
             _dumpFormat = dumpFormat;
 
             _logPrefix = number == null ? $"[{Path.GetFileName(FileName)}]" : $"[{number.Item1}/{number.Item2} {Path.GetFileName(FileName)}]";
@@ -149,7 +153,7 @@ namespace WowPacketParser.Loading
                     var outProtoFileName = Path.ChangeExtension(FileName, null) + "_parsed.dat";
                     FileStream protoOutputStream = null;
 
-                    if (Settings.DumpFormatWithTextToFile())
+                    if (!Settings.UseStandardOutput && Settings.DumpFormatWithTextToFile())
                     {
                         if (Utilities.FileIsInUse(outFileName) && Settings.DumpFormat != DumpFormatType.SqlOnly)
                         {
@@ -161,7 +165,7 @@ namespace WowPacketParser.Loading
                         File.Delete(outFileName);
                     }
 
-                    if (_dumpFormat.IsUniversalProtobufType())
+                    if (!Settings.UseStandardOutput && _dumpFormat.IsUniversalProtobufType())
                     {
                         if (Utilities.FileIsInUse(outProtoFileName))
                         {
@@ -184,13 +188,13 @@ namespace WowPacketParser.Loading
 
                     var written = false;
 
-                    using (var writer = (Settings.DumpFormatWithTextToFile() ? new StreamWriter(outFileName, true) : null))
+                    using (var writer = (!Settings.UseStandardOutput && Settings.DumpFormatWithTextToFile() ? new StreamWriter(outFileName, true) : null))
                     {
                         Packets packets = new() { Version = StructureVersion.ProtobufStructureVersion, DumpType = (uint)Settings.DumpFormat };
                         var firstRead = true;
                         var firstWrite = true;
 
-                        var reader = _compression != FileCompression.None ? new Reader(_tempName, _sniffType) : new Reader(FileName, _sniffType);
+                        var reader = _compression != FileCompression.None ? new Reader(_basePacketNumber, _tempName, _sniffType) : new Reader(_basePacketNumber, FileName, _sniffType);
 
                         var pwp = new ParallelWorkProcessor<Packet>(() => // read
                         {
@@ -200,7 +204,7 @@ namespace WowPacketParser.Loading
                             Packet packet;
                             var b = reader.TryRead(out packet);
 
-                            if (firstRead)
+                            if (firstRead && !Settings.UseStandardOutput)
                             {
                                 Trace.WriteLine(
                                     $"{_logPrefix}: Parsing {Utilities.BytesToString(reader.PacketReader.GetTotalSize())} of packets. Detected version {ClientVersion.VersionString}");
@@ -293,6 +297,9 @@ namespace WowPacketParser.Loading
 
                         reader.PacketReader.Dispose();
 
+                        if (Settings.UseStandardOutput)
+                            Console.WriteLine($"PKT" + packets.ToByteString().ToBase64());
+
                         if (protoOutputStream != null)
                         {
                             packets.WriteTo(protoOutputStream);
@@ -313,7 +320,8 @@ namespace WowPacketParser.Loading
                         }
                     }
 
-                    Trace.WriteLine($"{_logPrefix}: {_stats}");
+                    if (!Settings.UseStandardOutput)
+                        Trace.WriteLine($"{_logPrefix}: {_stats}");
 
                     if (Settings.SQLOutputFlag != 0 || HotfixSettings.Instance.ShouldLog())
                         WriteSQLs();
@@ -396,7 +404,7 @@ namespace WowPacketParser.Loading
                 }
                 case DumpFormatType.SniffVersionSplit:
                 {
-                    var reader = _compression != FileCompression.None ? new Reader(_tempName, _sniffType) : new Reader(FileName, _sniffType);
+                    var reader = _compression != FileCompression.None ? new Reader(_basePacketNumber, _tempName, _sniffType) : new Reader(_basePacketNumber, FileName, _sniffType);
 
                     if (ClientVersion.IsUndefined() && reader.PacketReader.CanRead())
                     {
