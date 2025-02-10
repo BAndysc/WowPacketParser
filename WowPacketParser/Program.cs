@@ -50,7 +50,7 @@ namespace WowPacketParser
             // config options are handled in Misc.Settings
             Utilities.RemoveConfigOptions(ref files);
 
-            if (!Utilities.GetFiles(ref files))
+            if (!Settings.UseStandardInput && !Utilities.GetFiles(ref files))
             {
                 EndPrompt();
                 return;
@@ -82,11 +82,8 @@ namespace WowPacketParser
 
             HotfixSettings.Instance.LoadHashes();
 
-            List<Packets> parserPacketsList = new();
 
-            var processStartTime = DateTime.Now;
-            var count = 0;
-            foreach (var file in files)
+            if (Settings.UseStandardInput)
             {
                 SessionHandler.ZStreams.Clear();
                 if (Settings.ClientBuild != Enums.ClientVersionBuild.Zero)
@@ -94,24 +91,47 @@ namespace WowPacketParser
 
                 ClientLocale.SetLocale(Settings.ClientLocale.ToString());
 
-                try
+                int readPackets = 0;
+                while (true)
                 {
-                    var sf = new SniffFile(file, Settings.DumpFormat, Tuple.Create(++count, files.Count));
-                    var packets = sf.ProcessFile();
-                    if (packets != null)
-                        parserPacketsList.Add(packets);
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"Can't process {file}. Skipping. Message: {ex.Message}");
+                    var sf = new SniffFile(readPackets, null, Settings.DumpFormat, Tuple.Create(1, 1));
+                    sf.ProcessFile();
+                    readPackets++;
                 }
             }
+            else
+            {
+                List<Packets> parserPacketsList = new();
 
-            if (!string.IsNullOrWhiteSpace(Settings.SQLFileName) && Settings.DumpFormatWithSQL())
-                Builder.DumpSQL(parserPacketsList, "Dumping global sql", Settings.SQLFileName, SniffFile.GetHeader("multi"));
+                var processStartTime = DateTime.Now;
+                var count = 0;
+                foreach (var file in files)
+                {
+                    SessionHandler.ZStreams.Clear();
+                    if (Settings.ClientBuild != Enums.ClientVersionBuild.Zero)
+                        ClientVersion.SetVersion(Settings.ClientBuild);
 
-            var processTime = DateTime.Now.Subtract(processStartTime);
-            Trace.WriteLine($"Processing {files.Count} sniffs took { processTime.ToFormattedString() }.");
+                    ClientLocale.SetLocale(Settings.ClientLocale.ToString());
+
+                    try
+                    {
+                        var sf = new SniffFile(0, file, Settings.DumpFormat, Tuple.Create(++count, files.Count));
+                        var packets = sf.ProcessFile();
+                        if (packets != null)
+                            parserPacketsList.Add(packets);
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Can't process {file}. Skipping. Message: {ex.Message}");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(Settings.SQLFileName) && Settings.DumpFormatWithSQL())
+                    Builder.DumpSQL(parserPacketsList, "Dumping global sql", Settings.SQLFileName, SniffFile.GetHeader("multi"));
+
+                var processTime = DateTime.Now.Subtract(processStartTime);
+                Trace.WriteLine($"Processing {files.Count} sniffs took { processTime.ToFormattedString() }.");
+            }
 
             SQLConnector.Disconnect();
             SSHTunnel.Disconnect();
