@@ -2,6 +2,7 @@
     <Import Project="../default.props" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <NoWarn>$(NoWarn),CS1570,CS1572,CS1573</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
