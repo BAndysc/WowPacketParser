@@ -100,6 +100,7 @@ namespace WowPacketParserModule.V4_3_4_15595.Parsers
             else
             {
                 var endpos = packet.ReadVector3("Points", indexes);
+                monsterMove.Points.Add(endpos);
 
                 if (pointsCount > 1)
                 {

@@ -1117,9 +1117,15 @@ namespace WowPacketParser.Parsing.Parsers
             }
         }
 
-        [Parser(Opcode.SMSG_BREAK_TARGET)]
         [Parser(Opcode.SMSG_DISMOUNT)]
         public static void HandleDismount(Packet packet)
+        {
+            var dismount = packet.Holder.Dismount = new();
+            dismount.Unit = packet.ReadPackedGuid("GUID");
+        }
+
+        [Parser(Opcode.SMSG_BREAK_TARGET)]
+        public static void HandleBreakTarget(Packet packet)
         {
             packet.ReadPackedGuid("GUID");
         }

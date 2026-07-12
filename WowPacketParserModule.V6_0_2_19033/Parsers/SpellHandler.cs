@@ -736,7 +736,8 @@ namespace WowPacketParserModule.V6_0_2_19033.Parsers
         [Parser(Opcode.SMSG_DISMOUNT)]
         public static void HandleDismount(Packet packet)
         {
-            packet.ReadPackedGuid128("Guid");
+            var dismount = packet.Holder.Dismount = new();
+           dismount.Unit = packet.ReadPackedGuid128("Guid");
         }
 
         [Parser(Opcode.SMSG_DISMOUNT_RESULT)]
